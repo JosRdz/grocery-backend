@@ -4,7 +4,16 @@ const mysql = require('mysql2/promise');
 
 const app = express();
 
-app.use(cors());
+/* =========================
+   🔥 CORS
+========================= */
+
+app.use(
+  cors({
+    origin: '*'
+  })
+);
+
 app.use(express.json());
 
 /* =========================
@@ -12,18 +21,35 @@ app.use(express.json());
 ========================= */
 
 const pool = mysql.createPool({
-  host: 'localhost',
-  user: 'root',
-  password: '',
-  database: 'grocerydb',
+  host: process.env.MYSQLHOST,
+  user: process.env.MYSQLUSER,
+  password: process.env.MYSQLPASSWORD,
+  database: process.env.MYSQLDATABASE,
+  port: process.env.MYSQLPORT,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
 });
 
-console.log(
-  '✅ Conectado a MySQL'
-);
+(async () => {
+  try {
+    const connection =
+      await pool.getConnection();
+
+    console.log(
+      '✅ Conectado a MySQL Railway'
+    );
+
+    connection.release();
+
+  } catch (err) {
+
+    console.error(
+      '❌ Error MySQL:',
+      err.message
+    );
+  }
+})();
 
 /* =========================
    🔐 LOGIN
@@ -606,12 +632,23 @@ app.get(
 );
 
 /* =========================
+   🩺 TEST
+========================= */
+
+app.get('/', (req, res) => {
+  res.send('API funcionando 🚀');
+});
+
+/* =========================
    🚀 SERVER
 ========================= */
 
-app.listen(3001, () => {
+const PORT =
+  process.env.PORT || 3001;
+
+app.listen(PORT, () => {
 
   console.log(
-    '🚀 Servidor corriendo en http://localhost:3001'
+    `🚀 Servidor corriendo en puerto ${PORT}`
   );
 });
